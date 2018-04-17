@@ -1,0 +1,35 @@
+{
+  "name": "roadshow",
+  "version": "1.0.0",
+  "description": "openshift roadshow",
+  "main": "server.js",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.3",
+    "font-awesome": "^4.7.0",
+    "finalhandler": "^1.1.1",
+    "multer": "^1.3.0",
+    "cookie-parser": "^1.4.3",
+    "fontawesome": "^4.7.2",
+    "serve-static": "^1.13.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wilsonchoi1/openshift-roadshow.git"
+  },
+  "keywords": [
+    "openshift",
+    "roadshow"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wilsonchoi1/openshift-roadshow/issues"
+  },
+  "homepage": "https://github.com/wilsonchoi1/openshift-roadshow#readme"
+}
