@@ -26,7 +26,7 @@ app.get('/api/workshops/roadshow/content/module/*', function (req, res) {
    res.sendfile(path, {root: './public'});
 })
 
-var server = app.listen(8081, function () {
+var server = app.listen(8080, function () {
    var host = server.address().address
    var port = server.address().port
    
