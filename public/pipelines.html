@@ -1,0 +1,569 @@
+<div class="sect1">
+<h2 id="_lab_automating_deployment_with_ci_cd_pipeline">Lab: Automating Deployment with CI/CD Pipeline</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_background_ci_cd_pipeline">Background: CI/CD Pipeline</h3>
+<div class="paragraph">
+<p>Continuous Integration and Continuous Deployment refer to a set of practises with
+the intention of automating various aspects of delivery software. One of these
+practises is Pipeline which is an automated process to define the steps a change
+in code or configuration has to go through in order to reach upper environments
+such as staging and production. OpenShift supports CI/CD Pipelines by integrating
+the popular <a href="https://jenkins.io/doc/book/pipeline/overview/">Jenkins pipelines</a> into
+the platform and enables defining truly complex workflows directly within OpenShift.</p>
+</div>
+<div class="paragraph">
+<p>In a previous lab, you deployed the <code>nationalparks</code> application using the
+<a href="https://docs.openshift.com/container-platform/latest/architecture/core_concepts/builds_and_image_streams.html#source-build">Source-to-Image (S2I)</a>
+mechanism. S2I already provides build automation by automatically running builds
+when source code changes, or an underlying image changes. Deployments are also automated
+by S2I and can be triggered when the image they are based on changes. In this lab,
+you will create a more complex workflow by creating a pipeline that extends the S2I
+functionality by adding more steps to the build and deploy process. The following
+diagram shows the pipeline you will create in this lab.</p>
+</div>
+<div class="imageblock" style="text-align: center">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-diagram.png" alt="CI/CD Pipeline Diagram" width="800">
+</div>
+</div>
+<div class="paragraph">
+<p>There are two environments for the <code>nationalparks</code> application in this pipeline.
+<strong>Dev</strong> container is the for development and test purposes where all code and
+configuration changes are deployed so that you can run automated tests against it.
+Furthermore, the test teams can run their manual tests on this container and
+report any bugs discovered through their test cases. If the tests are all successful
+and the <em>Deployment Manager</em> in the team approves the change, it is then deployed to the
+<strong>Live</strong> container which is the production environment with defined SLA and is
+critical to function properly at all times.</p>
+</div>
+<div class="paragraph">
+<p>The pipeline execution starts with a developer making a change in the application
+code or configuration. For every change, the following steps are executed with the
+goal of determining if the change is appropriate for deployment in the <strong>Live</strong>
+environment:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Clone the code from Git repo</p>
+</li>
+<li>
+<p>Build the code and run unit tests</p>
+</li>
+<li>
+<p>Build a docker image from the code (S2I)</p>
+</li>
+<li>
+<p>Deploy the docker image into <strong>Dev</strong></p>
+</li>
+<li>
+<p>Run automated tests against the <strong>Dev</strong> deployment</p>
+</li>
+<li>
+<p>Run manual tests against the <strong>Dev</strong> deployment</p>
+</li>
+<li>
+<p>Wait for the <strong>Deployment Manager</strong> to either approve or reject the deployment (e.g. manual tests have revealed an unacceptable number of bugs)</p>
+</li>
+<li>
+<p>If approved, deploy to <strong>Live</strong></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s move on to deploy <code>Jenkins</code> and create this pipeline on OpenShift.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_exercise_deploy_jenkins">Exercise: Deploy Jenkins</h3>
+<div class="paragraph">
+<p>OpenShift provides a supported Jenkins image which includes a rich set of
+plugins that enable the full pipeline flow. Click on the <strong>Add to project</strong>
+button. Then, scroll down to the <strong>Technologies</strong> section and click on <strong>Continuous
+Integration &amp; Deployment</strong>:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-technologies.png" alt="CI/CD Technologies">
+</div>
+</div>
+<div class="paragraph">
+<p>Find the <code>jenkins-ephemeral</code> template, and click on it:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-jenkins-catalog.png" alt="Jenkins Ephemeral">
+</div>
+</div>
+<div class="paragraph">
+<p>You can customize the Jenkins properties such as service name, admin password, memory
+allocation, etc through the parameters in the web console. We can leave all of
+the default values, so just click on <strong>Create</strong> to deploy Jenkins.</p>
+</div>
+<div class="paragraph">
+<p>OpenShift deploys a Jenkins pod and also creates a service and route for the
+deployed container.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-jenkins-pods.png" alt="Jenkins Pods">
+</div>
+</div>
+<div class="paragraph">
+<p>Click on the Jenkins route in order to open the Jenkins Console. You will again
+need to accept the certificate. The Jenkins image that is provided by Red Hat
+uses an OAuth integration with OpenShift. Your OpenShift user credentials also
+become the admin credentials for Jenkins:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-jenkins-credentials.png" alt="Login with OpenShift">
+</div>
+</div>
+<div class="paragraph">
+<p>Click <strong>Login with OpenShift</strong> and you will be taken to an OpenShift-branded login
+screen. Use your username (<em>userXX</em>) and password (<em>openshift3</em>) to
+access Jenkins. You will then be prompted to grant access:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-jenkins-permissions.png" alt="Grant Jenkins Permissions">
+</div>
+</div>
+<div class="paragraph">
+<p>Click <strong>Allow selected permissions</strong>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-jenkins-console.png" alt="Jenkins Console">
+</div>
+</div>
+<div class="paragraph">
+<p>The OpenShift Jenkins plugin uses the OpenShift REST API in order to integrate
+into various OpenShift operations. Since we want Jenkins to be able to do more
+than just look at our project, we will need to grant additional permissions. A
+Jenkins service account was created automatically when deploying Jenkins via the
+template. Run the following CLI command to allow the Jenkins service account to
+retrieve information and invoke action in OpenShift:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc policy add-role-to-user edit -z jenkins</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_exercise_remove_dev_from_code_parksmap_code">Exercise: Remove Dev from <code>parksmap</code></h3>
+<div class="paragraph">
+<p>Since we are going to be replacing the current <code>nationalparks</code> application with
+a <strong>Live</strong> version, we should remove the <strong>Dev</strong> version from the <code>parksmap</code> by
+taking away the <strong>Route</strong> label:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc label route nationalparks type-</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_exercise_create_live_environment">Exercise: Create Live Environment</h3>
+<div class="paragraph">
+<p>Before creating the pipeline, you need to create a <strong>Live</strong> deployment that runs
+the live version of <code>nationalparks</code> application. The <code>parksmap</code> front-end will
+talk to the <strong>Live</strong> <code>nationalparks</code>. This allows developers to make frequent
+changes in the <strong>Dev</strong> deployment without interfering with the live application.</p>
+</div>
+<div class="sect3">
+<h4 id="_live_mongodb">Live MongoDB</h4>
+<div class="paragraph">
+<p>First you need to create a new MongoDB deployment for the <strong>Live</strong> environment. In the
+web console in your <code>explore-XX</code> project,  click the <strong>Add to
+Project</strong> button, and then find the <code>mongodb-ephemeral</code> template, and click it.
+Use the following values in their respective fields:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Database Service Name : <code>mongodb-live</code></p>
+</li>
+<li>
+<p>MongoDB Connection Username : <code>mongodb</code></p>
+</li>
+<li>
+<p>MongoDB Connection Password : <code>mongodb</code></p>
+</li>
+<li>
+<p>MongoDB Database Name: <code>mongodb</code></p>
+</li>
+<li>
+<p>MongoB Admin Password : <code>mongodb</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You can leave the rest of the values as their defaults, and then click
+<strong>Create</strong>. Then click <strong>Continue to overview</strong>. The MongoDB instance should
+quickly be deployed. If you&#8217;re interested, take a look at Mongo&#8217;s logs to see
+what it does when it starts up.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_live_configmap">Live ConfigMap</h4>
+<div class="paragraph">
+<p>The database configuration for the <strong>Dev</strong> <code>nationalparks</code> webservice was changed
+to use <strong>ConfigMaps</strong> in a previous lab. Similarly, we will use a <strong>ConfigMap</strong> for
+<code>nationalparks-live</code>. Download the live properties file to your local machine
+and create a distinct <strong>ConfigMap</strong>. The file is located here:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>http://gitlab-ce-workshop-infra.apps.10.2.2.2.xip.io/userXX/nationalparks/raw/1.2.0/ose3/application-live.properties</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then, run the following command to create the live <strong>ConfigMap</strong>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc create configmap nationalparks-live --from-file=application.properties=./application-live.properties</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_live_deployment">Live Deployment</h4>
+<div class="paragraph">
+<p>Now you can create the <strong>Live</strong> deployment based on the same <code>nationalparks</code>
+Docker image created in <a href="java">previous labs</a>. Click on <strong>Builds</strong> &rarr;
+<strong>Images</strong> and then <code>nationalparks</code> to inspect the <strong>ImageStream</strong>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-live-image.png" alt="National Parks Image Stream">
+</div>
+</div>
+<div class="paragraph">
+<p>The default behavior for OpenShift has every
+<a href="https://docs.openshift.com/container-platform/latest/architecture/core_concepts/builds_and_image_streams.html">S2I
+build</a> creating a new Docker image that is pushed into the internal registry,
+identified with the <code>latest</code> tag. Since we do not want to immediately run or
+deploy the <strong>Live</strong> version of <code>nationalparks</code> when the image changes, we want the
+ability for the <strong>Dev</strong> and <strong>Live</strong> deployments to run different versions of the
+<code>nationalparks</code> image simultaneously. This will allow developers to continue
+changing and deploying <strong>Dev</strong> without affecting the <strong>Live</strong> environment. In
+order to achieve that, you will create a new Docker image tag using the CLI.
+This new tag will be what the <strong>Live</strong> deployment will look for changes to:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc tag nationalparks:latest nationalparks:live</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should have seen a change on the <strong>ImageStream</strong> page in the UI.</p>
+</div>
+<div class="paragraph">
+<p>This command says "please use the existing image that the tag
+<code>nationalparks:latest</code> points to and also point it at <code>nationalparks:live</code>." Or,
+in other words "create a new tag (<code>live</code>) that points to whatever <code>latest</code>
+points to.</p>
+</div>
+<div class="paragraph">
+<p>While <em>new</em> builds will update the <code>latest</code> tag, only a manual command (or an
+automated workflow, like we will implement with Jenkins) will update the <code>live</code>
+tag. The <code>live</code> tag keeps referring to the pervious Docker image and therefore
+leaves the <strong>Live</strong> environment intact.</p>
+</div>
+<div class="paragraph">
+<p>After creating the tag, you are ready to deploy the <strong>Live</strong> <code>nationalparks</code> based
+on the <code>nationalparks:live</code> image tag. In the web console in your
+<code>explore-XX</code> project,  click the <strong>Add to Project</strong> button, and then
+<strong>Deploy Image</strong> tab. Choose the <strong>Image Stream Tag</strong> radio button and use following
+values in each respective field:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Namespace: <code>explore-XX</code></p>
+</li>
+<li>
+<p>ImageStream: <code>nationalparks</code></p>
+</li>
+<li>
+<p>Tag: <code>live</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Once you make your three dropdown selections in the <strong>Image Stream Tag</strong> area,
+you will see the rest of the standard deployment options "open up".</p>
+</div>
+<div class="paragraph">
+<p>There are only a few things to change:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Name: <code>nationalparks-live</code></p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If you forget to change the name to <code>nationalparks-live</code> you will get an error
+about resources already existing&#8201;&#8212;&#8201;because they do. <code>nationalparks</code> already
+exists as our <strong>Dev</strong> Deployment.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-live-deploy-config.png" alt="National Parks Live Deploy">
+</div>
+</div>
+<div class="paragraph">
+<p>You can leave the rest of the values as their defaults, and then click
+<strong>Create</strong>. Then click <strong>Continue to overview</strong>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_attach_configmap">Attach ConfigMap</h4>
+<div class="paragraph">
+<p>Deploying the <code>nationalparks-live</code> image through the UI did not utilize the
+<strong>ConfigMap</strong>, so we have one more step&#8201;&#8212;&#8201;to tell OpenShift where to put the
+properties file. Since you have already created the <strong>ConfigMap</strong>, all you have to
+do is use the <code>oc set volumes</code> command to put it in the right place:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc set volumes dc/nationalparks-live --add -m /deployments/config --configmap-name=nationalparks-live</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_group_services">Group Services</h4>
+<div class="paragraph">
+<p>Group the <strong>Live</strong> services
+by clicking on the <strong>Group Service</strong> on the right side of <strong>NATIONALPARKS LIVE</strong>
+container and choosing <code>mongodb-live</code> from the drop-down list.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-live.png" alt="National Parks Live">
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_add_route">Add Route</h4>
+<div class="paragraph">
+<p>If you look at the web console, you will notice that, when you create the
+application this way, OpenShift doesn&#8217;t create a <strong>Route</strong> for you. Click on
+<strong>Create Route</strong> on the top right corner of <strong>NATIONALPARKS LIVE</strong> and
+then <strong>Create</strong> to create a route with the default values.</p>
+</div>
+<div class="paragraph">
+<p>Similar to the <a href="databases">previous labs</a>, populate the database by pointing your browser to the
+<code>nationalparks-live</code> route url:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>http://nationalparks-live-explore-XX.apps.10.2.2.2.xip.io/ws/data/load/</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If the application has not been deployed yet, you might get a <em>502 Bad Gateway error webpage</em>. This
+means that the application backing up the route is not yet ready. Wait until the pod is up.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_label_service">Label Service</h4>
+<div class="paragraph">
+<p>As discussed in <a href="databases">previous labs</a>, the <code>parksmap</code> web app queries the OpenShift API and
+looks for routes that have the label <code>type=parksmap-backend</code> and interrogates the
+discovered endpoints to visualize their map data. After creating the pipeline,
+<code>parksmap</code> should use the <strong>Live</strong> container instead of the <strong>Dev</strong> container so that
+deployments to the <strong>Dev</strong> container does not disrupt the <code>parksmap</code> application.
+You can do that by removing the <code>type</code> label from the <strong>Dev</strong> route and adding it
+to the <strong>Live</strong> route:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc label route nationalparks-live type=parksmap-backend</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_exercise_disable_automatic_deployment_of_nationalparks_dev">Exercise: Disable Automatic Deployment of nationalparks (dev)</h3>
+<div class="paragraph">
+<p>When we created the <code>nationalparks</code> build earlier in the workshop, OpenShift
+configured the deployment of the image to occur automatically whenever the
+<code>:latest</code> tag was updated.</p>
+</div>
+<div class="paragraph">
+<p>In our pipeline example, Jenkins is going to handle telling OpenShift to deploy
+the dev version of <code>nationalparks</code> if it builds successfully. In order to
+prevent two deployments, we will need to disable automatic deployments with a
+simple CLI statement:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc set triggers dc/nationalparks --from-image=nationalparks:latest --remove</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_exercise_create_openshift_pipeline">Exercise: Create OpenShift Pipeline</h3>
+<div class="paragraph">
+<p>The Pipeline is in fact a type of build that allows developers to define a Jenkins
+pipeline for execution by the Jenkins pipeline plugin. The build can be started,
+monitored, and managed by OpenShift Container Platform in the same way as any other
+build type. Pipeline workflows are defined in a Jenkinsfile, either embedded directly
+in the build configuration, or supplied in a Git repository and referenced by the
+build configuration.</p>
+</div>
+<div class="paragraph">
+<p>In order to create the pipeline, click on the <strong>Add to project</strong> button,
+find the <code>dev-live-pipeline</code> template, and click on it. Specify the project name
+and click on <strong>Create</strong></p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Specify the name of the project (e.g. <code>explore-XX</code>) where
+<code>nationalparks</code> <strong>Dev</strong> and <strong>Live</strong> containers are deployed.
+</td>
+</tr>
+</table>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-template.png" alt="Pipeline Template">
+</div>
+</div>
+<div class="paragraph">
+<p>In order to start the pipeline that you created in a previous step, Go to
+<strong>Builds</strong> &rarr; <strong>Pipelines</strong> on the left side-bar. Click <code>nationalparks-pipeline</code>
+and click on <strong>Start Build</strong> to start the execution.  You can click on <strong>View
+Log</strong> to take a look at the build logs as they progress through the pipeline or
+on <strong>Build #N</strong> to see the details of this specific pipeline execution as well as
+the pipeline definition using the
+<a href="https://jenkins.io/doc/book/pipeline/overview/">Jenkins DSL</a>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-details.png" alt="Pipeline Details">
+</div>
+</div>
+<div class="paragraph">
+<p>Because of the way the pipeline was defined, if you return to the overview page
+you will also see the pipeline status there, associated with the relevant
+deployments:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-deploy-dev.png" alt="Pipeline - Deploy to Dev">
+</div>
+</div>
+<div class="paragraph">
+<p>Pipeline execution will pause after running automated tests against the <strong>Dev</strong>
+container. Visit the <code>nationalparks</code> <strong>Dev</strong> web service to query for data and
+verify the service works as expected.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>http://nationalparks-explore-XX.apps.10.2.2.2.xip.io/ws/data/all/</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If the application has not been deployed yet, you might get a <em>502 Bad Gateway error webpage</em>. This
+means that the application backing up the route is not yet ready. Wait until the pod is up.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>After the test stage, pipeline waits for manual approval in order to deploy to the
+<strong>Live</strong> container.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-input.png" alt="Manual Approval">
+</div>
+</div>
+<div class="paragraph">
+<p>Click on <strong>Input Required</strong> link which takes you to the Jenkins Console for approving
+the deployment. This step typically will be integrated into your workflow process
+(e.g. JIRA Service Desk and ServiceNow) and will be performed as part of the overall
+deployment process without interacting directly with Jenkins. For simplicity in
+this lab, click on <strong>Proceed</strong> button to approve the build.</p>
+</div>
+<div class="imageblock" style="text-align: center">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-jenkins-input.png" alt="Jenkins Approval" width="1000">
+</div>
+</div>
+<div class="paragraph">
+<p>Pipeline execution continues to promote and deploy the <code>nationalparks</code> image.
+This is achieved by tagging the image that was just built and tested as "live",
+which causes the <code>imagechange</code> trigger on the <strong>Live</strong> deployment to act. This
+likely already happened before you finished reading this paragraph.</p>
+</div>
+<div class="paragraph">
+<p>In <strong>Builds</strong> &rarr; <strong>Pipelines</strong>, click on <strong>View History</strong> to go to the pipeline overview
+which shows the pipeline execution history as well as build time metrics so that you can
+iteratively improve the build process as well detect build time anomalies which usually
+signal a bad change in the code or configuration.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Build metrics are generated and displayed after a few executions of the pipeline
+to determine trends.
+</td>
+</tr>
+</table>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-history.png" alt="OpenShift History">
+</div>
+</div>
+<div class="paragraph">
+<p>Congratulations! Now you have a CI/CD Pipeline for the <code>nationalparks</code>
+application. If you visit the parks map again, you should see the map points!</p>
+</div>
+</div>
+</div>
+</div>

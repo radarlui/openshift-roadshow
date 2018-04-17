@@ -1,0 +1,133 @@
+<div class="sect1">
+<h2 id="_lab_application_health">Lab: Application Health</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_background_readiness_and_liveness_probes">Background: Readiness and Liveness Probes</h3>
+<div class="paragraph">
+<p>As we have seen before in the UI via warnings, there is a concept of application
+health checks in OpenShift. These come in two flavors:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Readiness probe</p>
+</li>
+<li>
+<p>Liveness probe</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>From the
+<a href="https://docs.openshift.com/container-platform/latest/dev_guide/application_health.html">Application
+Health</a> section of the documentation, we see the definitions:</p>
+</div>
+<div class="dlist glossary">
+<dl>
+<dt>Liveness Probe</dt>
+<dd>
+<p>A liveness probe checks if the container in which it is configured is still
+running. If the liveness probe fails, the kubelet kills the container, which
+will be subjected to its restart policy. Set a liveness check by configuring
+the <code>template.spec.containers.livenessprobe</code> stanza of a pod configuration.</p>
+</dd>
+<dt>Readiness Probe</dt>
+<dd>
+<p>A readiness probe determines if a container is ready to service requests. If
+the readiness probe fails a container, the endpoints controller ensures the
+container has its IP address removed from the endpoints of all services. A
+readiness probe can be used to signal to the endpoints controller that even
+though a container is running, it should not receive any traffic from a proxy.
+Set a readiness check by configuring the
+<code>template.spec.containers.readinessprobe</code> stanza of a pod configuration.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>It sounds complicated, but it really isn&#8217;t. We will use the web console to add
+these probes to our <code>nationalparks</code> application.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_exercise_add_health_checks">Exercise: Add Health Checks</h3>
+<div class="paragraph">
+<p>As we are going to be implementing a realistic CI/CD pipeline, we will be doing
+some testing of the "development" version of the application. However, in order
+to test the app, it must be ready. This is where OpenShift&#8217;s application health
+features come in very handy.</p>
+</div>
+<div class="paragraph">
+<p>We are going to add both a readiness and liveness probe to the existing
+<code>nationalparks</code> deployment. This will ensure that OpenShift does not add any
+instances to the service until they pass the readiness checks, and will ensure
+that unhealthy instances are restarted (if they fail the liveness checks).</p>
+</div>
+<div class="paragraph">
+<p>Click <strong>Applications</strong> &rarr; <strong>Deployments</strong> on the left-side bar. Click
+<code>nationalparks</code>. You will see the warning about health checks, with a link to
+click in order to add them. Click <strong>Add health checks</strong> now.</p>
+</div>
+<div class="paragraph">
+<p>You will want to click both <strong>Add Readiness Probe</strong> and <strong>Add Liveness Probe</strong> and
+then fill them out as follows:</p>
+</div>
+<div class="paragraph">
+<p><em>Readiness Probe</em></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Path: <code>/ws/healthz/</code></p>
+</li>
+<li>
+<p>Initial Delay: <code>20</code></p>
+</li>
+<li>
+<p>Timeout: <code>1</code></p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-readiness.png" alt="Readiness Probe">
+</div>
+</div>
+<div class="paragraph">
+<p><em>Liveness Probe</em></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Path: <code>/ws/healthz/</code></p>
+</li>
+<li>
+<p>Initial Delay: <code>120</code></p>
+</li>
+<li>
+<p>Timeout: <code>1</code></p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/pipeline-liveness.png" alt="Liveness Probe">
+</div>
+</div>
+<div class="paragraph">
+<p>Click <strong>Save</strong> and then click the <strong>Overview</strong> button in the left navigation. You
+will notice that these changes caused a new deployment&#8201;&#8212;&#8201;they counted as a
+configuration change.</p>
+</div>
+<div class="paragraph">
+<p>You will also notice that the circle around the new deployment stays light blue
+for a while. This is a sign that the pod(s) have not yet passed their readiness
+checks&#8201;&#8212;&#8201;it&#8217;s working!</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/apphealth-status.png" alt="Application Health">
+</div>
+</div>
+</div>
+</div>
+</div>

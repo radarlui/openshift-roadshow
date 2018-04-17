@@ -1,0 +1,130 @@
+<div class="sect1">
+<h2 id="_lab_openshift_role_based_access_control">Lab: OpenShift Role-Based Access Control</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_background">Background</h3>
+<div class="paragraph">
+<p>Almost every interaction with an OpenShift environment that you can think of
+requires going through the master&#8217;s API. All API interactions are both
+authenticated (AuthN - who are you?) and authorized (AuthZ - are you allowed to
+do what you are asking?).</p>
+</div>
+<div class="paragraph">
+<p>In the log aggregation lab we saw that there was an
+error in reference to a <strong>Service Account</strong>.Just like a user has
+permissions (AuthZ), sometimes we may wish for non-users to be able to perform
+actions against the API. These "non-users" are referred to as service accounts.</p>
+</div>
+<div class="paragraph">
+<p>OpenShift automatically creates a few special service accounts in every project.
+The <strong>default</strong> service account has its credentials automatically injected into
+every pod that is launched. By changing the permissions for that service
+account, we can do interesting things.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_exercise_grant_service_account_view_permissions">Exercise: Grant Service Account View Permissions</h3>
+<div class="paragraph">
+<p>The parksmap application wants to talk to the OpenShift API to learn about other
+<strong>Pods</strong>, <strong>Services</strong>, and resources within the <strong>Project</strong>. You&#8217;ll learn why soon!</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc project explore-XX</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc policy add-role-to-user view -z default</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>oc policy</code> command above is giving a defined <em>role</em> (<code>view</code>) to a user. But
+we are using a special flag, <code>-z</code>. What does this flag do? From the <code>-h</code> output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>-z, --serviceaccount=[]: service account in the current namespace to use as a user</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>-z</code> syntax is a special one that saves us from having to type out the
+entire string, which, in this case, is
+<code>system:serviceaccount:explore-XX:default</code>. It&#8217;s a nifty shortcut.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The <code>-z</code> flag will only work for service accounts in the <strong>current</strong> namespace.
+Beware of this if you attempt to use it in the future.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Now that the default <strong>Service Account</strong> has <strong>view</strong> access, it can query the API
+to see what resources are within the <strong>Project</strong>. This also has the added benefit
+of supressing the error message! Although, in reality, we fixed the application.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_exercise_grant_user_view_permissions">Exercise: Grant User View Permissions</h3>
+<div class="paragraph">
+<p>If you create a project, you are that project&#8217;s administrator. This means that
+you can grant access to other users, too. If you like, give your neighbor view
+access to your <code>explore</code> project using the following command:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc policy add-role-to-user view userXX</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Have them go to the project view by clicking the <strong>Projects</strong> button and verify
+that they can see your project and its resources. This type of arrangement (view
+but not edit) might be ideal for a developer getting visibility into a
+production application&#8217;s project.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_exercise_redeploy_application">Exercise: Redeploy Application</h3>
+<div class="paragraph">
+<p>One more step is required. We need to re-deploy the application because it&#8217;s
+given up trying to query the API.</p>
+</div>
+<div class="paragraph">
+<p>This time we&#8217;ll use the web console. Find your <code>explore-XX</code> project,
+and then click "Applications" and then "Deployments". You&#8217;ll see your only
+application, <code>parksmap</code>, listed. Click that.</p>
+</div>
+<div class="paragraph">
+<p>The deployment screen tells you a lot about how the application will be
+deployed. At the top right, there is a button labeled "Deploy". This button will
+cause a new deployment (which you know creates a new <strong>ReplicationController</strong>,
+right?).</p>
+</div>
+<div class="paragraph">
+<p>Click it.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/new-parksmap-deploy.png" alt="Deploy Button">
+</div>
+</div>
+<div class="paragraph">
+<p>You&#8217;ll see that a new deployment is immediately started. Return to the overview
+page and watch it happen. You might not be fast enough! If you look at the logs
+for the application now, you should see no errors.  That&#8217;s great.</p>
+</div>
+</div>
+</div>
+</div>

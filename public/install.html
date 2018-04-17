@@ -1,0 +1,198 @@
+<div class="sect1">
+<h2 id="_lab_installing_the_openshift_cli">Lab: Installing the OpenShift CLI</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_command_line_interface">Command Line Interface</h3>
+<div class="paragraph">
+<p>OpenShift ships with a feature rich web console as well as command line tools
+to provide users with a nice interface to work with applications deployed to the
+platform.  The OpenShift tools are a single executable written in the Go
+programming language and is available for the following operating systems:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Microsoft Windows</p>
+</li>
+<li>
+<p>Apple OS X</p>
+</li>
+<li>
+<p>Linux</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_downloading_the_tools">Downloading the tools</h4>
+<div class="paragraph">
+<p>During this lab, we are going to download the client tool and add them to our
+operating system $PATH environment variables so the executable is accessible
+from any directory on the command line.</p>
+</div>
+<div class="paragraph">
+<p>The first thing we want to do is download the correct executable for your
+operating system as linked below:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/openshift/origin/releases/download/v1.3.3/openshift-origin-client-tools-v1.3.3-bc17c1527938fa03b719e1a117d584442e3727b8-windows.zip">Microsoft Windows</a></p>
+</li>
+<li>
+<p><a href="https://github.com/openshift/origin/releases/download/v1.3.3/openshift-origin-client-tools-v1.3.3-bc17c1527938fa03b719e1a117d584442e3727b8-mac.zip">Apple OS X</a></p>
+</li>
+<li>
+<p><a href="https://github.com/openshift/origin/releases/download/v1.3.3/openshift-origin-client-tools-v1.3.3-bc17c1527938fa03b719e1a117d584442e3727b8-linux-64bit.tar.gz">Linux 64</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Once the file has been downloaded, you will need to extract the contents as it
+is a compressed archive.  I would suggest saving this file to the following
+directories:</p>
+</div>
+<div class="paragraph">
+<p><strong>Windows:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>C:\OpenShift</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>OS X:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>~/OpenShift</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Linux:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>~/OpenShift</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_extracting_the_tools">Extracting the tools</h4>
+<div class="paragraph">
+<p>Once you have the tools downloaded, you will need to extract the contents:</p>
+</div>
+<div class="paragraph">
+<p><strong>Windows:</strong></p>
+</div>
+<div class="paragraph">
+<p>In order to extract a zip archive on windows, you will need a zip utility
+installed on your system.  With newer versions of windows (greater than XP),
+this is provided by the operating system.  Just right click on the downloaded
+file using file explorer and select to extract the contents.</p>
+</div>
+<div class="paragraph">
+<p><strong>OS X:</strong></p>
+</div>
+<div class="paragraph">
+<p>Open up a terminal window and change to the directory where you downloaded the
+file.  Once you are in the directory, enter in the following command:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ tar zxvf oc-macosx.tar.gz</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The tar.gz file name needs to be replaced by the entire name that was downloaded in the previous step.</p>
+</div>
+<div class="paragraph">
+<p><strong>Linux:</strong></p>
+</div>
+<div class="paragraph">
+<p>Open up a terminal window and change to the directory where you downloaded the
+file.  Once you are in the directory, enter in the following command:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ tar zxvf oc-linux.tar.gz</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The tar.gz file name needs to be replaced by the entire name that was downloaded in the previous step.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_adding_code_oc_code_to_your_path">Adding <code>oc</code> to your PATH</h4>
+<div class="paragraph">
+<p><strong>Windows:</strong></p>
+</div>
+<div class="paragraph">
+<p>Because changing your PATH on windows varies by version of the operating system,
+we will not list each operating system here.  However, the general workflow is
+right click on your computer name inside of the file explorer.  Select Advanced
+system settings. I guess changing your PATH is considered an advanced task? :)
+Click on the advanced tab, and then finally click on Environment variables.
+Once the new dialog opens, select the Path variable and add ";C:\OpenShift" at
+the end.  For an easy way out, you could always just copy it to C:\Windows or a
+directory you know is already on your path. For more detailed instructions:</p>
+</div>
+<div class="paragraph">
+<p><a href="https://support.microsoft.com/en-us/kb/310519">Windows XP</a></p>
+</div>
+<div class="paragraph">
+<p><a href="http://banagale.com/changing-your-system-path-in-windows-vista.htm">Windows Vista</a></p>
+</div>
+<div class="paragraph">
+<p><a href="http://geekswithblogs.net/renso/archive/2009/10/21/how-to-set-the-windows-path-in-windows-7.aspx">Windows 7</a></p>
+</div>
+<div class="paragraph">
+<p><a href="http://www.itechtics.com/customize-windows-environment-variables/">Windows 8</a></p>
+</div>
+<div class="paragraph">
+<p>Windows 10 - Follow the directions above.</p>
+</div>
+<div class="paragraph">
+<p><strong>OS X:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ export PATH=$PATH:~/OpenShift</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Linux:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ export PATH=$PATH:~/OpenShift</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_verify">Verify</h4>
+<div class="paragraph">
+<p>At this point, we should have the oc tool available for use.  Let&#8217;s test this
+out by printing the version of the oc command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc version</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see the following (or something similar):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>oc v1.3.3
+kubernetes v1.3.0+52492b4</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you get an error message, you have not updated your path correctly.  If you
+need help, raise your hand and the instructor will assist.</p>
+</div>
+</div>
+</div>
+</div>
+</div>

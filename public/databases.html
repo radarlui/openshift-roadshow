@@ -1,0 +1,470 @@
+<div class="sect1">
+<h2 id="_lab_adding_a_database">Lab: Adding a Database</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_application_description">Application Description</h3>
+<div class="paragraph">
+<p>In this lab, we&#8217;re going to deploy a Mongo database that will be used to store
+the data for the <code>nationalparks</code> application. We will also connect the
+<code>nationalparks</code> service with the newly deployed Mongo database, so that the
+<code>nationalparks</code> service can load and query the database for the corresponding
+information.</p>
+</div>
+<div class="paragraph">
+<p>Finally, we will mark the <code>nationalparks</code> application as a backend for the map
+visualization tool, so that it can be dynamically discovered by the <code>parksmap</code>
+component using the OpenShift discovery mechanism and the map will be displayed
+automatically.</p>
+</div>
+<div class="imageblock" style="text-align: center">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/roadshow-app-architecture-nationalparks-2.png" alt="Application architecture" width="800">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_background_storage">Background: Storage</h3>
+<div class="paragraph">
+<p>Most useful applications are "stateful" or "dynamic" in some way, and this is
+usually achieved with a database or other data storage. In this next lab we are
+going to add MongoDB to our <code>nationalparks</code> application and then rewire it to
+talk to the database using environment variables.</p>
+</div>
+<div class="paragraph">
+<p>We are going to use the MongoDB image that is included with OpenShift.</p>
+</div>
+<div class="paragraph">
+<p>By default, this will use <strong>EmptyDir</strong> for data storage, which means if the <strong>Pod</strong>
+disappears the data does as well. In a real application you would use
+OpenShift&#8217;s persistent storage mechanism to attach real-world storage (NFS,
+Gluster, EBS, etc) to the <strong>Pods</strong> to give them a persistent place to store their
+data.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_background_environment_variables">Background: Environment Variables</h3>
+<div class="paragraph">
+<p>As you&#8217;ve seen so far, the web console makes it very easy to deploy things onto
+OpenShift. When we deploy the database, we pass in some environment variables.
+These environment variables are used to set the username, password, and name of
+the database.  You can change the
+values of these environment variables to anything you would like.  The variables
+we are going to be setting are as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>MONGODB_USER</p>
+</li>
+<li>
+<p>MONGODB_PASSWORD</p>
+</li>
+<li>
+<p>MONGODB_DATABASE</p>
+</li>
+<li>
+<p>MONGODB_ADMIN_PASSWORD</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The database image is built in a way that it will automatically configure itself
+using the supplied information (assuming there is no data already present in the
+persistent storage!). The image will ensure that:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A database exists with the specified name</p>
+</li>
+<li>
+<p>A user exists with the specified name</p>
+</li>
+<li>
+<p>The user can access the specified database with the specified password</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In the web console in your <code>explore-XX</code> project,
+again click the <strong>"Add to Project"</strong> button. Click the <strong>Data Stores</strong> category.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/mongodb-datastores.png" alt="Data Stores">
+</div>
+</div>
+<div class="paragraph">
+<p>Type <code>mongodb</code> in the search box, and then scroll down to find the <strong>MongoDB
+(Ephemeral)</strong> template, and click it.  You will notice that there are several
+MongoDB templates available, some of which come with application servers
+pre-configured.  We just need a database, though, so the ephemeral Mongo
+template is what you should choose.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/ocp-mongodb-template.png" alt="MongoDB">
+</div>
+</div>
+<div class="paragraph">
+<p>When we performed the application build, there was no template. Rather, we selected the
+builder image directly and OpenShift presented only the standard build workflow.
+Now we are using a template - a preconfigured set of resources that includes
+parameters that can be customized. In our case, the parameters we are concerned
+with are the environment variables discussed&#8201;&#8212;&#8201;user, password, database, and
+admin password.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/ocp-mongo-template-deploy.png" alt="MongoDB">
+</div>
+</div>
+<div class="paragraph">
+<p>You can see that some of the fields say <strong>"generated if empty"</strong>. This is a
+feature of <strong>Templates</strong> in OpenShift that will be covered in the next lab. For
+now, be sure to use the following values in their respective fields:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>MONGODB_USER</code> : <code>mongodb</code></p>
+</li>
+<li>
+<p><code>MONGODB_PASSWORD</code> : <code>mongodb</code></p>
+</li>
+<li>
+<p><code>MONGODB_DATABASE</code>: <code>mongodb</code></p>
+</li>
+<li>
+<p><code>MONGODB_ADMIN_PASSWORD</code> : <code>mongodb</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You can leave the rest of the values as their defaults, and then click
+<strong>"Create"</strong>. Then click <strong>Continue to overview</strong>. The MongoDB instance should
+quickly be deployed.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/mongo-group-db-1.png" alt="Service Groups">
+</div>
+</div>
+<div class="paragraph">
+<p>You can group services in OpenShift Console in order to display related services
+together in one panel. Click on the chain icon on the right-top corner of the
+<code>nationalparks</code> service, choose <code>mongodb</code> from the drop-down list in the
+<strong>Group Service to nationalparks</strong> dialog and click on <strong>OK</strong>. The <code>nationalparks</code> and
+ <code>mongodb</code> services are groups and displayed together.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/mongo-group-db-2.png" alt="Service Groups">
+</div>
+</div>
+<div class="sect3">
+<h4 id="_exercise_wiring_the_application_and_the_database">Exercise: Wiring the Application and the Database</h4>
+<div class="paragraph">
+<p>When we initially created the <code>nationalparks</code> application, we provided no environment
+variables. The application is looking for a database, but can&#8217;t find one, and it
+fails gracefully (you don&#8217;t see an error).</p>
+</div>
+<div class="paragraph">
+<p>We need to configure the <code>nationalparks</code> <strong>Pod</strong>(s) to have the right values in
+the right environment variables so that the application knows how and where to
+find MongoDB.</p>
+</div>
+<div class="paragraph">
+<p>If you think way back to the beginning of the labs, you will recall that a
+<strong>DeploymentConfiguration</strong> tells OpenShift how to deploy something. This includes
+things like what environment variables to configure. So, to set up the right
+environment variables, we simply need to modify the <strong>DeploymentConfiguration</strong>
+(DC).  This can easily be done from either the web interface or via the command
+line.</p>
+</div>
+<div class="paragraph">
+<p>The command line takes a little less time, so let&#8217;s use that option. First, find
+the name of the DC:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc get dc</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then, use the <code>oc env</code> command to set environment variables directly on the DC:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc env dc nationalparks -e MONGODB_USER=mongodb -e MONGODB_PASSWORD=mongodb -e MONGODB_DATABASE=mongodb -e MONGODB_SERVER_HOST=mongodb</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After you have modified the <strong>DeploymentConfig</strong> object, you can verify the
+environment variables have been added by viewing the YAML for it:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc get dc nationalparks -o yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see the following section:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>- env:
+  - name: MONGODB_USER
+    value: mongodb
+  - name: MONGODB_PASSWORD
+    value: mongodb
+  - name: MONGODB_DATABASE
+    value: mongodb
+  - name: MONGODB_SERVER_HOST
+    value: mongodb</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also just ask OpenShift to tell you about the environment variables on
+the DC:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc env dc/nationalparks --list
+# deploymentconfigs nationalparks, container nationalparks
+MONGODB_USER=mongodb
+MONGODB_PASSWORD=mongodb
+MONGODB_DATABASE=mongodb
+MONGODB_SERVER_HOST=mongodb</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_exercise_exploring_openshift_magic">Exercise: Exploring OpenShift Magic</h4>
+<div class="paragraph">
+<p>As soon as we set the environment variables on the <strong>DeploymentConfiguration</strong>, some
+magic happened. OpenShift decided that this was a significant enough change to
+warrant updating the internal version number of the <strong>DeploymentConfiguration</strong>. You
+can verify this by looking at the output of <code>oc get dc</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>NAME            REVISION   DESIRED   CURRENT   TRIGGERED BY
+mongodb         1          1         1         config,image(mongodb:3.2)
+nationalparks   2          1         1         config,image(nationalparks:1.2.0)
+parksmap        1          1         1         config,image(parksmap:1.2.0)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Something that increments the version of a <strong>DeploymentConfiguration</strong>, by default,
+causes a new deployment. You can verify this by looking at the output of <code>oc get
+rc</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>NAME              DESIRED   CURRENT   READY     AGE
+mongodb-1         1         1         0         24m
+nationalparks-1   0         0         0         3h
+nationalparks-2   1         1         0         8m
+parksmap-1        1         1         0         6h</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We see that the desired and current number of instances for the "-1" deployment
+is 0. The desired and current number of instances for the "-2" deployment is 1.
+This means that OpenShift has gracefully torn down our "old" application and
+stood up a "new" instance.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_exercise_data_data_everywhere">Exercise: Data, Data, Everywhere</h4>
+<div class="paragraph">
+<p>Now that we have a database deployed, we can again visit the <code>nationalparks</code> web
+service to query for data:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>http://nationalparks-explore-XX.apps.10.2.2.2.xip.io/ws/data/all</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And the result?</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>[]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where&#8217;s the data? Think about the process you went through. You deployed the
+application and then deployed the database. Nothing actually loaded anything
+<strong>INTO</strong> the database, though.</p>
+</div>
+<div class="paragraph">
+<p>The application provides an endpoint to do just that:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>http://nationalparks-explore-XX.apps.10.2.2.2.xip.io/ws/data/load</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And the result?</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>Items inserted in database: 2740</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you then go back to <code>/ws/data/all</code> you will see tons of JSON data now.
+That&#8217;s great. Our parks map should finally work!</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+There&#8217;s some errors reported with browsers like firefox 54 that don&#8217;t properly parse the resulting JSON. It&#8217;s
+a browser problem, and the application is working properly.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>http://parksmap-explore-XX.apps.10.2.2.2.xip.io</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Hmm&#8230;&#8203; There&#8217;s just one thing. The main map <strong>STILL</strong> isn&#8217;t displaying the parks.
+That&#8217;s because the front end parks map only tries to talk to services that have
+the right <strong>Label</strong>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>You are probably wondering how the database connection magically started
+working? When deploying applications to OpenShift, it is always best to use
+environment variables to define connections to dependent systems.  This allows
+for application portability across different environments.  The source file that
+performs the connection as well as creates the database schema can be viewed
+here:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>http://gitlab-ce-workshop-infra.apps.10.2.2.2.xip.io/userXX/nationalparks/blob/1.2.0/src/main/java/com/openshift/evg/roadshow/parks/db/MongoDBConnection.java#L44-l48</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In short summary: By referring to environment variables to connect to services
+(like databases), it can be trivial to promote applications throughout different
+lifecycle environments on OpenShift without having to modify application code.</p>
+</div>
+<div class="paragraph">
+<p>You can learn more about environment variables in the
+<a href="https://docs.openshift.com/container-platform/latest/dev_guide/environment_variables.html">environment
+variables</a> section of the Developer Guide.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_exercise_working_with_labels">Exercise: Working With Labels</h4>
+<div class="paragraph">
+<p>We explored how a <strong>Label</strong> is just a key=value pair earlier when looking at
+<strong>Services</strong> and <strong>Routes</strong> and <strong>Selectors</strong>. In general, a <strong>Label</strong> is simply an
+arbitrary key=value pair. It could be anything.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>pizza=pepperoni</code></p>
+</li>
+<li>
+<p><code>wicked=googly</code></p>
+</li>
+<li>
+<p><code>openshift=awesome</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In the case of the parks map, the application is actually querying the OpenShift
+API and asking about the <strong>Routes</strong> and <strong>Services</strong> in the project. If any of them have a
+<strong>Label</strong> that is <code>type=parksmap-backend</code>, the application knows to interrogate
+the endpoints to look for map data.</p>
+</div>
+<div class="paragraph">
+<p>You can see the code that does this
+<a href="https://github.com/openshift-roadshow/parksmap-web/blob/1.2.0/src/main/java/com/openshift/evg/roadshow/rest/RouteWatcher.java#L20">here</a>.</p>
+</div>
+<div class="paragraph">
+<p>Fortunately, the command line provides a convenient way for us to manipulate
+labels. <code>describe</code> the <code>nationalparks</code> service:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc describe route nationalparks
+
+Name:                   nationalparks
+Namespace:              explore-XX
+Created:                2 hours ago
+Labels:                 app=nationalparks
+Requested Host:         nationalparks-explore-XX.apps.10.2.2.2.xip.io
+                        exposed on router router 2 hours ago
+Path:                   &lt;none&gt;
+TLS Termination:        &lt;none&gt;
+Insecure Policy:        &lt;none&gt;
+Endpoint Port:          8080-tcp
+
+Service:                nationalparks
+Weight:                 100 (100%)
+Endpoints:              10.1.9.8:8080</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You see that it only has one label: <code>app=nationalparks</code>. Now, use <code>oc label</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc label route nationalparks type=parksmap-backend</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You will see something like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>route "nationalparks" labeled</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you check your browser now:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>http://parksmap-explore-XX.apps.10.2.2.2.xip.io/</code></pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/parksmap-new-parks.png" alt="MongoDB">
+</div>
+</div>
+<div class="paragraph">
+<p>You&#8217;ll notice that the parks suddenly are showing up. That&#8217;s really cool!</p>
+</div>
+</div>
+</div>
+</div>
+</div>

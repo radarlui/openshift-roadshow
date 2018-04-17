@@ -1,0 +1,321 @@
+<div class="sect1">
+<h2 id="_lab_deploying_java_code">Lab: Deploying Java Code</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_application_description">Application Description</h3>
+<div class="paragraph">
+<p>In this lab, we&#8217;re going to deploy a backend service, developed in Java
+programming language that will expose 2 main REST endpoints to the visualizer
+application (<code>parksmap</code> web component that was deployed in the previous labs).
+The application will query for national parks information (including it&#8217;s
+coordinates) that is stored in a Mongo database.  This application will also
+provide an external access point, so that the API provided can be directly used
+by the end user.</p>
+</div>
+<div class="imageblock" style="text-align: center">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/roadshow-app-architecture-nationalparks-1.png" alt="Application architecture" width="800">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_background_source_to_image_s2i">Background: Source-to-Image (S2I)</h3>
+<div class="paragraph">
+<p>In a previous lab, we learned how to deploy a pre-existing Docker-formatted
+image. Now we will expand on that a bit by learning how OpenShift builds a
+Docker images using source code from an existing repository.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/openshift/source-to-image">Source-to-Image (S2I)</a> is another
+open source project sponsored by Red Hat. Its goal:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>Source-to-image (S2I) is a tool for building reproducible Docker images. S2I
+produces ready-to-run images by injecting source code into a Docker image and
+assembling a new Docker image which incorporates the builder image and built
+source. The result is then ready to use with docker run. S2I supports
+incremental builds which re-use previously downloaded dependencies, previously
+built artifacts, etc.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>OpenShift is S2I-enabled and can use S2I as one of its build mechanisms (in
+addition to building Docker images from Dockerfiles, and "custom" builds).</p>
+</div>
+<div class="paragraph">
+<p>OpenShift runs the S2I process inside a special <strong>Pod</strong>, called a Build
+Pod, and thus builds are subject to quotas, limits, resource scheduling, and
+other aspects of OpenShift.</p>
+</div>
+<div class="paragraph">
+<p>A full discussion of S2I is beyond the scope of this class, but you can find
+more information about it either in the
+<a href="https://docs.openshift.com/container-platform/latest/creating_images/s2i.html">OpenShift S2I documentation</a>
+or on GitHub (following the link above). The only key concept you need to
+remember about S2I is that it&#8217;s magic.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_exercise_creating_a_java_application">Exercise: Creating a Java application</h3>
+<div class="paragraph">
+<p>The backend service that we will be deploying as part of this exercise is
+called <code>nationalparks</code>.  This is a Java Spring Boot application that performs 2D
+geo-spatial queries against a MongoDB database to locate and return map
+coordinates of all National Parks in the world. That was just a fancy way of
+saying that we are going to deploy a webservice that returns a JSON list of
+places.</p>
+</div>
+<div class="sect3">
+<h4 id="_add_to_project">Add to Project</h4>
+<div class="paragraph">
+<p>Because the <code>nationalparks</code> application is a back-end to serve data that our
+existing front-end will consume, we are going to build it inside the existing
+<code>explore-XX</code> project. And, we will do it from the web console.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_using_application_code_on_embedded_gitlab">Using application code on embedded GitLab</h4>
+<div class="paragraph">
+<p>OpenShift can work with any accessible Git repository. This could be GitHub,
+GitLab, or any other server that speaks Git. You can even register webhooks in
+your Git server to initiate OpenShift builds triggered by any update to the
+application code!</p>
+</div>
+<div class="paragraph">
+<p>The repository that we are going to use is already cloned in the internal GitLab repository
+and located at the following URL:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>http://gitlab-ce-workshop-infra.apps.10.2.2.2.xip.io/userXX/nationalparks/tree/1.2.0</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Your GitLab credentials are: <strong>userXX/openshift3</strong></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Later in the lab, we want you to make a code change and then rebuild your
+application. This is a fairly simple Spring framework Java application.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_build_the_code_on_openshift">Build the Code on OpenShift</h4>
+<div class="paragraph">
+<p>Similar to how we used "Add to project" before with a Docker-formatted image, we
+can do the same for specifying a source code repository. Since for this lab you
+have your own GitLab repository, let&#8217;s use it with a simple Java S2I image.</p>
+</div>
+<div class="paragraph">
+<p>In the OpenShift web console, find your <code>explore-XX</code> project, and then
+click the <strong>"Add to Project"</strong> button. You will see a list of categories of
+runtimes, and other types of components that you can deploy and run on OpenShift.</p>
+</div>
+<div class="paragraph">
+<p>Type <em>"jdk"</em> into the search box, and then select the item titled
+<code>redhat-openjdk18-openshift</code>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/ocp-runtimes.png" alt="Runtimes">
+</div>
+</div>
+<div class="paragraph">
+<p>After you click <code>redhat-openjdk18-openshift</code>, on the next screen you will need
+to enter a name and a Git repository URL. For the name, enter <code>nationalparks</code>,
+and for the Git repository URL, enter:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>http://gitlab-ce-workshop-infra.apps.10.2.2.2.xip.io/userXX/nationalparks.git</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+All of these runtimes shown are made available via <strong>Templates</strong> and
+<strong>ImageStreams</strong>, which will be discussed in a later lab.
+</td>
+</tr>
+</table>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/new-national-parks-1.png" alt="Runtimes">
+</div>
+</div>
+<div class="paragraph">
+<p>These labs were written against specific points in time for these
+applications. With Git as our version control system (VCS), we are using the
+concept of <strong>Branches/Tags</strong>. Click on <strong>Show advanced routing, build, and deployment
+options</strong>. In the <strong>Git Reference</strong> field enter "<strong>1.2.0</strong>". This will cause the S2I
+process to grab that specific tag in the code repository.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/nationalparks-tag.png" alt="Runtimes">
+</div>
+</div>
+<div class="paragraph">
+<p>You can then hit the button labeled <strong>"Create"</strong>. Then click <strong>Continue to
+overview</strong>. You will see this in the web console:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>Build nationalparks, #1 Running. A new deployment will be created automatically
+once the build completes.  a few seconds ago View Log</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Go ahead and click <strong>"View Log"</strong>. This is a Java-based application that uses
+Maven as the build and dependency system.  For this reason, the initial build
+will take a few minutes as Maven downloads all of the dependencies needed for
+the application. You can see all of this happening in real time!</p>
+</div>
+<div class="paragraph">
+<p>From the command line, you can also see the <strong>Builds</strong>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc get builds</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You&#8217;ll see output like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>NAME              TYPE      FROM          STATUS     STARTED              DURATION
+nationalparks-1   Source    Git@b052ae6   Running    About a minute ago   1m2s</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also view the build logs with the following command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc logs -f builds/nationalparks-1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After the build has completed and successfully:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The S2I process will push the resulting Docker-formatted image to the internal OpenShift registry</p>
+</li>
+<li>
+<p>The <strong>DeploymentConfiguration</strong> (DC) will detect that the image has changed, and this
+will cause a new deployment to happen.</p>
+</li>
+<li>
+<p>A <strong>ReplicationController</strong> (RC) will be spawned for this new deployment.</p>
+</li>
+<li>
+<p>The RC will detect no <strong>Pods</strong> are running and will cause one to be deployed, as our default replica count is just 1.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In the end, when issuing the <code>oc get pods</code> command, you will see that the build Pod
+has finished (exited) and that an application <strong>Pod</strong> is in a ready and running state:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>NAME                    READY     STATUS      RESTARTS   AGE
+nationalparks-1-tkid3   1/1       Running     3          2m
+nationalparks-1-build   0/1       Completed   0          3m
+parksmap-1-4hbtk        1/1       Running     0          2h</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you look again at the web console, you will notice that, when you create the
+application this way, OpenShift also creates a <strong>Route</strong> for you. You can see the
+URL in the web console, or via the command line:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc get routes</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where you should see something like the following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>NAME            HOST/PORT                                                   PATH      SERVICES        PORT       TERMINATION
+nationalparks   nationalparks-explore-XX.apps.10.2.2.2.xip.io             nationalparks   8080-tcp
+parksmap        parksmap-explore-XX.apps.10.2.2.2.xip.io                  parksmap        8080-tcp</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the above example, the URL is:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>http://nationalparks-explore-XX.apps.10.2.2.2.xip.io</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Since this is a back-end application, it doesn&#8217;t actually have a web interface.
+However, it can still be used with a browser. All back ends that work with the parks map
+front end are required to implement a <code>/ws/info/</code> endpoint. To test, the
+complete URL to enter in your browser is:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>http://nationalparks-explore-XX.apps.10.2.2.2.xip.io/ws/info/</code></pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+The trailing slash is <strong>required</strong>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>You will see a simple JSON string:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>{"id":"nationalparks","displayName":"National Parks","center":{"latitude":"47.039304","longitude":"14.505178"},"zoom":4}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Earlier we said:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>This is a Java Spring Boot application that performs 2D geo-spatial queries
+against a MongoDB database</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>But we don&#8217;t have a database. Yet.</p>
+</div>
+</div>
+</div>
+</div>
+</div>

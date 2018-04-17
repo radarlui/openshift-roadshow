@@ -1,0 +1,170 @@
+<div class="sect1">
+<h2 id="_lab_remote_operations">Lab: Remote Operations</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_background">Background</h3>
+<div class="paragraph">
+<p>Containers are treated as immutable infrastructure and therefore it is generally
+not recommended to modify the content of a container through SSH or running custom
+commands inside the container. Nevertheless, in some use-cases, such as debugging
+an application, it might be beneficial to get into a container and inspect the
+application.</p>
+</div>
+<div class="sect3">
+<h4 id="_exercise_remote_shell_session_to_a_container">Exercise: Remote Shell Session to a Container</h4>
+<div class="paragraph">
+<p>OpenShift allows establishing remote shell sessions to a container without the
+need to run an SSH service inside each container. In order to establish an
+interactive session inside a container, you can use the <code>oc rsh</code> command. First
+get the list of available pods:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc get pods</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should an output similar to the following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>NAME               READY     STATUS    RESTARTS   AGE
+parksmap-2-tegp4   1/1       Running   0          2m</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now you can establish a remote shell session into the pod by using the pod name:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc rsh parksmap-2-tegp4</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You would see the following output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>sh-4.2$</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The default shell used by <code>oc rsh</code> is <code>/bin/sh</code>. If the deployed container does
+not have <strong>sh</strong> installed and uses another shell, (e.g. <strong>A Shell</strong>) the shell command
+can be specified after the pod name in the issued command.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Run the following command to list the files in the top folder:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ ls /
+
+anaconda-post.log  bin  dev  etc  home  lib  lib64  lost+found  media  mnt  opt  parksmap.jar  proc  root  run  sbin  srv  sys  tmp  usr  var</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_exercise_execute_a_command_in_a_container">Exercise: Execute a Command in a Container</h4>
+<div class="paragraph">
+<p>In addition to remote shell, it is also possible to run a command remotely in an
+already running container using the <code>oc exec</code> command. This does not require
+that a shell is installed, but only that the desired command is present and in
+the executable path.</p>
+</div>
+<div class="paragraph">
+<p>In order to show just the JAR file, run the following:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc exec parksmap-2-tegp4 -- ls -l /parksmap.jar</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You would see something like the following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>-rw-r--r--. 1 root root 21753918 Nov 23 15:54 /parksmap.jar</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The <code>--</code> syntax in the <code>oc exec</code> command delineates where exec&#8217;s options
+end and where the actual command to execute begins. Take a look at <code>oc exec
+--help</code> for more details.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>You can also specify the shell commands to run directly with the <strong>oc rsh</strong> command:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc rsh parksmap-2-tegp4 whoami</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You would see something like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>whoami: cannot find name for user ID 1000060000
+error: error executing remote command: error executing command in container: Error executing in Docker Container: 1</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>It is important to understand that, for security reasons, OpenShift does not run
+Docker containers as the user specified in the Dockerfile by default. In fact,
+when OpenShift launches a container its user is actually randomized.</p>
+</div>
+<div class="paragraph">
+<p>If you want or need to allow OpenShift users to deploy Docker images that do
+expect to run as root (or any specific user), a small configuration change is
+needed. You can learn more about the
+<a href="https://docs.openshift.com/container-platform/latest/creating_images/guidelines.html">Docker guidelines</a>
+for OpenShift, or you can look at the section on
+<a href="https://docs.openshift.com/container-platform/latest/admin_guide/manage_scc.html#enable-images-to-run-with-user-in-the-dockerfile">enabling
+images to run with a USER in the dockerfile</a>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_exercise_use_the_web_console">Exercise: Use the Web Console</h4>
+<div class="paragraph">
+<p>You can also access a terminal into a container from the web console. On the
+<strong>Pod</strong> details page, one of the tabs says <strong>Terminal</strong>. Try it!</p>
+</div>
+</div>
+</div>
+</div>
+</div>

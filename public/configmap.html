@@ -1,0 +1,177 @@
+<div class="sect1">
+<h2 id="_lab_externalizing_application_configuration">Lab: Externalizing Application Configuration</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_background_application_configuration_with_configmaps">Background: Application Configuration with ConfigMaps</h3>
+<div class="paragraph">
+<p>Most applications require configuration using environment variables,
+configuration files and command line arguments. These configuration artifacts
+should be externalized form the application and the docker image content in
+order to keep the image portable across environments.</p>
+</div>
+<div class="paragraph">
+<p>In <a href="databases">previous labs</a>, the <code>nationalparks</code> application was configured
+with database credentials using environment variables. While environment
+variables is a useful way to configure applications, it is difficult to manage
+hundreds of environment variables which are scattered across various containers
+in a project. Fortunately, there is a convenient and platform-independent
+mechanism in OpenShift to configure applications, which is called <code>ConfigMap</code>.</p>
+</div>
+<div class="paragraph">
+<p>The <code>ConfigMap</code> object in OpenShift provides mechanisms to provide configuration
+data to the application container while keeping the application images both
+portable across environments and independent of OpenShift Container Platform. A
+<code>ConfigMap</code> can be used to store key-value properties, configuration files, JSON
+blobs and alike.</p>
+</div>
+<div class="paragraph">
+<p>In this lab, you will replace the environment variables provided in the
+<a href="databases">previous labs</a> and use a <code>ConfigMap</code> instead to configure the
+<code>nationalparks</code> application.</p>
+</div>
+<div class="sect3">
+<h4 id="_exercise_create_a_configmap">Exercise: Create a ConfigMap</h4>
+<div class="paragraph">
+<p>You can create a <code>ConfigMap</code> by pointing at a file containing the application
+configuration. Download this properties file to your local machine which
+contains the database credentials:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>http://gitlab-ce-workshop-infra.apps.10.2.2.2.xip.io/userXX/nationalparks/raw/1.2.0/ose3/application-dev.properties</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Verify that the contents of the file are correct. If you have downladed the file with Internet Explorer it might contain
+incorrect chars or different charset. Try to use "Google Chrome", "Firefox" or "curl".
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Create a <code>ConfigMap</code> using the following command in the <code>explore-XX</code> project:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc create configmap nationalparks --from-file=application.properties=./application-dev.properties</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>--from-file</code> option specifies a key-value pair with the key used as the
+file name that is provided to the application and value as the content of the
+file. In the above command, the content of <code>application-dev.properties</code> file
+will be provided to the application container as a properties file called
+<code>application.properties</code></p>
+</div>
+<div class="paragraph">
+<p>List and verify that the <code>ConfigMap</code> is created successfully containing the
+database credentials:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc describe configmap nationalparks
+
+Name:		nationalparks
+Namespace:	demo
+Labels:		&lt;none&gt;
+Annotations:	&lt;none&gt;
+
+Data
+====
+application.properties:	123 bytes</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can review the content of the <code>ConfigMap</code> using the <code>oc get</code> command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc get configmap nationalparks -o yaml
+
+apiVersion: v1
+data:
+  application.properties: |
+    # NationalParks MongoDB
+    mongodb.server.host=mongodb
+    mongodb.user=mongodb
+    mongodb.password=mongodb
+    mongodb.database=mongodb
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2016-11-16T09:17:02Z
+  name: nationalparks
+  namespace: explore-XX
+  resourceVersion: "8421"
+  selfLink: /api/v1/namespaces/demo/configmaps/nationalparks
+  uid: 6f4536cf-abdd-11e6-9282-525400c3c0db</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_exercise_wire_the_configmap_inside_nationalparks_container">Exercise: Wire the ConfigMap inside nationalparks Container</h4>
+<div class="paragraph">
+<p>Configuration data can be consumed in pods in a variety of ways. A <code>ConfigMap</code>
+can be used to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Populate the value of environment variables</p>
+</li>
+<li>
+<p>Set command-line arguments in a container</p>
+</li>
+<li>
+<p>Populate configuration files in a volume</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <code>nationalparks</code> Spring Boot application can be configured through a
+properties file called <code>application.properties</code> which should reside in a specific
+location in the container filesystem. Using the following command to mount the
+<code>ConfigMap</code> inside the <code>nationalparks</code> pod:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc set volumes dc/nationalparks --add -m /deployments/config --configmap-name=nationalparks</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The above command makes the content of the configmap <code>ConfigMap</code>, which you
+created from a file, called <code>application.properties</code>, available in the
+<code>/opt/openshift/config</code> directory. The <code>nationalparks</code> <strong>DeploymentConfiguration</strong>
+detects the configuration change, and automatically deploys the <strong>Pod</strong> with
+the new configuration.</p>
+</div>
+<div class="paragraph">
+<p>Also, as we have configured <code>nationalparks</code> through <code>ConfigMap</code>, you can remove
+the database environment variables set in the <a href="databases">previous labs</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc env dc/nationalparks MONGODB_USER- MONGODB_PASSWORD- MONGODB_DATABASE- MONGODB_SERVER_HOST-</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You have now externalized <code>nationalparks</code> configuration. Visit the <code>nationalparks</code> web
+service to very the database connection is working correctly.:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>http://nationalparks-explore-XX.apps.10.2.2.2.xip.io/ws/data/all/</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you check the new <strong>Pod&#8217;s</strong> logs once it comes up, you should see no errors.</p>
+</div>
+</div>
+</div>
+</div>
+</div>

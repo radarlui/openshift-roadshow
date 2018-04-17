@@ -1,0 +1,181 @@
+<div class="sect1">
+<h2 id="_lab_exploring_the_cli_and_web_console">Lab: Exploring the CLI and Web Console</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_command_line">Command Line</h3>
+<div class="paragraph">
+<p>The first thing we want to do to ensure that our <code>oc</code> command line tools was
+installed and successfully added to our path is login to the OpenShift
+environment that has been provided for this Roadshow session.  In
+order to login, we will use the <code>oc</code> command and then specify the server that we
+want to authenticate to.  Issue the following command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc login 10.2.2.2:8443</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You may see the following output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>The server uses a certificate signed by an unknown authority.
+You can bypass the certificate check, but any data you send to the server could be intercepted by others.
+Use insecure connections? (y/n):</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Enter in <strong>Y</strong> to use a potentially insecure connection.  The reason you received
+this message is because we are using a self-signed certificate for this
+workshop, but we did not provide you with the CA certificate that was generated
+by OpenShift. In a real-world scenario, either OpenShift&#8217;s certificate would be
+signed by a standard CA (eg: Thawte, Verisign, StartSSL, etc.) or signed by a
+corporate-standard CA that you already have installed on your system.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>On some versions of Microsoft Windows, you may get an error that the
+server has an invalid x.509 certificate.  If you receive this error, enter in
+the following command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc login 10.2.2.2:8443 --insecure-skip-tls-verify=true</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Once you issue the <code>oc login</code> command, you will be prompted for the username and
+password combination for your user account:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>Username: userXX
+Password: openshift3</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Once you have authenticated to the OpenShift server, you will see the
+following confirmation message:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>Login successful.
+
+Using project "explore-XX".</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Congratulations, you are now authenticated to the OpenShift server. The
+OpenShift master includes a built-in OAuth server. Developers and administrators
+obtain OAuth access tokens to authenticate themselves to the API. By default
+your authorization token will last for 24 hours. There is more information about
+the login command and its configuration in the <a href="https://docs.openshift.com/container-platform/cli_reference/get_started_cli.html#basic-setup-and-login">OpenShift Documentation</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_a_project">Using a project</h3>
+<div class="paragraph">
+<p>Projects are a top level concept to help you organize your deployments. An
+OpenShift project allows a community of users (or a user) to organize and manage
+their content in isolation from other communities. Each project has its own
+resources, policies (who can or cannot perform actions), and constraints (quotas
+and limits on resources, etc). Projects act as a "wrapper" around all the
+application services and endpoints you (or your teams) are using for your work.
+For this first lab, we are going to use a project named <strong>smoke</strong> that has been
+created and populated with an application for you.</p>
+</div>
+<div class="paragraph">
+<p>During this lab, we are going to use a few different commands to make sure that
+things in the environment are working as expected.  Don&#8217;t worry if you don&#8217;t
+understand all of the terminology as we will cover it in detail in later labs.</p>
+</div>
+<div class="paragraph">
+<p>The first thing we want to do is switch to the <strong>explore-XX</strong> project. You
+can do this with the following command:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc project explore-XX</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You will see the following confirmation message:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>Now using project "explore-XX" on server "https://10.2.2.2:8443".</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_web_console">The Web Console</h3>
+<div class="paragraph">
+<p>OpenShift ships with a web-based console that will allow users to
+perform various tasks via a browser.  To get a feel for how the web console
+works, open your browser and go to the following URL:</p>
+</div>
+<div class="paragraph">
+<p><strong><a href="https://10.2.2.2:8443" class="bare">https://10.2.2.2:8443</a></strong></p>
+</div>
+<div class="paragraph">
+<p>The first screen you will see is the authentication screen.  Enter in the following credentials:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>Username: userXX
+Password: openshift3</code></pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/ocp-login.png" alt="OpenShift Login Screen">
+</div>
+</div>
+<div class="paragraph">
+<p>After you have authenticated to the web console, you will be presented with a
+list of projects that your user has permission to work with. You will see
+something that looks like the following image:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/explore-webconsole1.png" alt="Web Console">
+</div>
+</div>
+<div class="paragraph">
+<p>Click on the <strong>explore-XX</strong> project. When you click on the
+<strong>explore-XX</strong> project, you will be taken to the project overview page
+which will list all of the routes, services, deployments, and pods that you have
+running as part of your project. There&#8217;s nothing there now, but that&#8217;s about to
+change.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/explore-webconsole2.png" alt="Explore Project">
+</div>
+</div>
+<div class="paragraph">
+<p>Lastly, the web console will show you an error: <em>An error occurred getting
+metrics.</em>  We need to accept another self-signed certificate for OpenShift&#8217;s metrics
+aggregation. If we don&#8217;t, then the metrics will not display in the OpenShift UI.</p>
+</div>
+<div class="paragraph">
+<p>Click the link that says <strong>Open metrics URL</strong>, and accept the certificate.</p>
+</div>
+<div class="paragraph">
+<p>We will be using a mix of command line tooling and the web console for the labs.
+Get ready!</p>
+</div>
+</div>
+</div>
+</div>

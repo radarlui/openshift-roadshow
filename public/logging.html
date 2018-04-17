@@ -1,0 +1,163 @@
+<div class="sect1">
+<h2 id="_lab_exploring_openshift_s_logging_capabilities">Lab: Exploring OpenShift&#8217;s Logging Capabilities</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>OpenShift provides some convenient mechanisms for viewing application logs.
+First and foremost is the ability to examine a <strong>Pod</strong>'s logs directly from the
+web console or via the command line.</p>
+</div>
+<div class="sect2">
+<h3 id="_background_container_logs">Background: Container Logs</h3>
+<div class="paragraph">
+<p>OpenShift is constructed in such a way that it expects containers to log all
+information to <code>STDOUT</code>. In this way, both regular and error information is
+captured via standardized Docker mechanisms. When exploring the <strong>Pod</strong>'s logs
+directly, you are essentially going through the Docker daemon to access the
+container&#8217;s logs, through OpenShift&#8217;s API. Neat!</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>In some cases, applications may not have been designed to send all of their
+information to <code>STDOUT</code> and <code>STDERR</code>. In many cases, multiple local log files
+are used. While OpenShift cannot parse any information from these files, nothing
+prevents them from being created, either. In other cases, log information is
+sent to some external system using. Here, too, OpenShift does not prohibit these
+behaviors. If you have an application that does not log to <code>STDOUT</code>, either because it
+already sends log information to some "external" system or because it writes
+various log information to various files, fear not.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_exercise_examining_logs">Exercise: Examining Logs</h4>
+<div class="paragraph">
+<p>Since we already deployed our application, we can take some time to examine its
+logs. In the web console, find your way back to the <strong>Pod</strong> details page
+(Applications &#8594; Pods &#8594; specific pod) and then click on the "Logs" tab. You
+should see a nice view of the <strong>Pod</strong>'s logs:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/parksmap-console-logs.png" alt="Application Logs">
+</div>
+</div>
+<div class="paragraph">
+<p>It appears there are some errors in the log, and that&#8217;s OK. We&#8217;ll remedy those
+in a little bit.</p>
+</div>
+<div class="paragraph">
+<p>You also have the option of viewing logs from the command line. Get the name of
+your <strong>Pod</strong>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc get pods
+NAME               READY     STATUS    RESTARTS   AGE
+parksmap-1-hx0kv   1/1       Running   0          5h</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And then use the <code>logs</code> command to view this <strong>Pod</strong>'s logs:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>$ oc logs parksmap-1-hx0kv</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You will see all of the application logs scroll on your screen:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>15:34:25.844 [main] DEBUG io.fabric8.kubernetes.client.Config - Trying to configure client from Kubernetes config...
+15:34:25.937 [main] DEBUG io.fabric8.kubernetes.client.Config - Did not find Kubernetes config at: [/.kube/config]. Ignoring.
+15:34:25.937 [main] DEBUG io.fabric8.kubernetes.client.Config - Trying to configure client from service account...
+15:34:25.938 [main] DEBUG io.fabric8.kubernetes.client.Config - Found service account ca cert at: [/var/run/secrets/kubernetes.io/serviceaccount/ca.crt].
+15:34:25.960 [main] DEBUG io.fabric8.kubernetes.client.Config - Found service account token at: [/var/run/secrets/kubernetes.io/serviceaccount/token].
+15:34:25.961 [main] DEBUG io.fabric8.kubernetes.client.Config - Trying to configure client namespace from Kubernetes service account namespace path...
+15:34:25.962 [main] DEBUG io.fabric8.kubernetes.client.Config - Found service account namespace at: [/var/run/secrets/kubernetes.io/serviceaccount/namespace].
+....</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_exercise_aggregated_pod_logs">Exercise: Aggregated Pod Logs</h4>
+<div class="paragraph">
+<p>When your application consists of only one <strong>Pod</strong> and it never fails, restarts,
+or has other issues, these ways to view logs may not be so bad. However in a
+scaled-out application where <strong>Pods</strong> may have restarted, been scaled up or down,
+or if you just want to get historical information, these mechanisms may be
+insufficient.</p>
+</div>
+<div class="paragraph">
+<p>Fortunately, OpenShift provides an optional system for log aggregation that uses
+Fluentd, Elasticsearch, and Kibana (EFK).</p>
+</div>
+<div class="paragraph">
+<p>In the OpenShift web console on the <strong>Pod</strong>'s logs page, at the right you will see
+a "View Archive" link. Go ahead and click it. You will need to accept the SSL
+certificate.</p>
+</div>
+<div class="paragraph">
+<p>Clicking this link takes you to the Kibana web interface. This interface is
+secured with OpenShift&#8217;s role-based access controls, so you can only see logs
+for projects that you have access to.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/kibana-parksmap.png" alt="Kibana Interface">
+</div>
+</div>
+<div class="paragraph">
+<p>The "View Archive" link that you clicked takes you to a default view with a specific search term
+pre-populated. Kibana will only show you logs where the pod name is
+<code>parksmap-1-hx0kv</code> and in the <strong>Project</strong> (namespace) explore-XX.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>kubernetes.pod_name:"parksmap-1-hx0kv" AND kubernetes.namespace_name:"explore-XX"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you want to see all the historical logs for this <strong>Project</strong>, simply remove the
+pod name reference and click the magnifying glass.</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>kubernetes.namespace_name:"explore-XX"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you click the "x" in the column for the container name, and, in the left bar,
+click "add" for <code>kubernetes.pod_name</code>, you&#8217;ll then see your old <strong>Pod</strong>'s logs,
+too. Remember, we scaled them down before coming here, so you can see how the
+log system is keeping a historical record.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/kibana-parksmap-headers.png" alt="Kibana Interface">
+</div>
+</div>
+<div class="paragraph">
+<p>Try the following search string:</p>
+</div>
+<div class="listingblock copypaste">
+<div class="content">
+<pre class="highlightjs highlight"><code>kubernetes.namespace_name:"explore-XX" AND message:"Failure executing"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Service account? What&#8217;s that?</p>
+</div>
+</div>
+</div>
+</div>
+</div>
