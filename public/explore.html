@@ -1,6 +1,6 @@
 <div class="sect1">
-<h2 id="_lab_exploring_the_cli_and_web_console">Lab: Exploring the CLI and Web Console</h2>
-<div class="sectionbody">
+<h2 id="_lab_exploring_the_cli_and_web_console">Lab: Exploring the Web Console</h2>
+<!--div class="sectionbody">
 <div class="sect2">
 <h3 id="_command_line">Command Line</h3>
 <div class="paragraph">
@@ -114,10 +114,10 @@ can do this with the following command:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code>Now using project "explore-XX" on server "https://10.2.2.2:8443".</code></pre>
+<pre class="highlightjs highlight"><code>Now using project "explore-XX" on server "https://astri-ihub.org:8443".</code></pre>
 </div>
 </div>
-</div>
+</div-->
 <div class="sect2">
 <h3 id="_the_web_console">The Web Console</h3>
 <div class="paragraph">
@@ -126,7 +126,7 @@ perform various tasks via a browser.  To get a feel for how the web console
 works, open your browser and go to the following URL:</p>
 </div>
 <div class="paragraph">
-<p><strong><a href="https://10.2.2.2:8443" class="bare">https://10.2.2.2:8443</a></strong></p>
+<p><strong><a href="https://astri-ihub.org:8443" class="bare">https://astri-ihub.org:8443</a></strong></p>
 </div>
 <div class="paragraph">
 <p>The first screen you will see is the authentication screen.  Enter in the following credentials:</p>
@@ -144,17 +144,52 @@ Password: openshift3</code></pre>
 </div>
 <div class="paragraph">
 <p>After you have authenticated to the web console, you will be presented with a
-list of projects that your user has permission to work with. You will see
-something that looks like the following image:</p>
+list of projects that your user has permission to work with. As you didn't had any project yet. You will see something that looks like the following image:</p>
 </div>
 <div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/welcome.png" alt="Web Console">
+</div>
+</div>
+<div class="paragraph">
+<p>Click on the <strong>New Project</strong>, you will be taken to the project creation page
+</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/newproject.png" alt="New Project">
+</div>
+</div>
+<div class="paragraph">
+<p>Enter the following required information:
+</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>Name: explore-XX</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After the project created, you will be redirect to the <strong>"Add to project"</strong> page
+</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/addtoproject.png" alt="New Project">
+</div>
+</div>
+<!--div class="paragraph">
+<p>Click on the <strong>explore-XX</strong> link, you will go back to the project overview page.
+</p>
+</div-->
+<!--div class="imageblock">
 <div class="content">
 <img src="/api/workshops/roadshow/content/assets/images/explore-webconsole1.png" alt="Web Console">
 </div>
 </div>
 <div class="paragraph">
-<p>Click on the <strong>explore-XX</strong> project. When you click on the
-<strong>explore-XX</strong> project, you will be taken to the project overview page
+<p>Click on the <strong>explore-XX</strong> project. --> When you click on the
+<strong>explore-XX</strong> link, you will be taken to the project overview page
 which will list all of the routes, services, deployments, and pods that you have
 running as part of your project. There&#8217;s nothing there now, but that&#8217;s about to
 change.</p>

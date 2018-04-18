@@ -88,10 +88,12 @@ and located at the following URL:</p>
 </div>
 <div class="listingblock copypaste">
 <div class="content">
-<pre class="highlightjs highlight"><code>http://gitlab-ce-workshop-infra.apps.10.2.2.2.xip.io/userXX/nationalparks/tree/1.2.0</code></pre>
+<pre class="highlightjs highlight"><code>
+https://github.com/openshift-roadshow/nationalparks.git
+</code></pre>
 </div>
 </div>
-<div class="admonitionblock note">
+<!--div class="admonitionblock note">
 <table>
 <tr>
 <td class="icon">
@@ -109,7 +111,7 @@ and located at the following URL:</p>
 <p>Later in the lab, we want you to make a code change and then rebuild your
 application. This is a fairly simple Spring framework Java application.</p>
 </div>
-</div>
+</div-->
 <div class="sect3">
 <h4 id="_build_the_code_on_openshift">Build the Code on OpenShift</h4>
 <div class="paragraph">
@@ -138,7 +140,9 @@ and for the Git repository URL, enter:</p>
 </div>
 <div class="listingblock copypaste">
 <div class="content">
-<pre class="highlightjs highlight"><code>http://gitlab-ce-workshop-infra.apps.10.2.2.2.xip.io/userXX/nationalparks.git</code></pre>
+<pre class="highlightjs highlight"><code>
+https://github.com/openshift-roadshow/nationalparks.git
+</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -187,7 +191,7 @@ Maven as the build and dependency system.  For this reason, the initial build
 will take a few minutes as Maven downloads all of the dependencies needed for
 the application. You can see all of this happening in real time!</p>
 </div>
-<div class="paragraph">
+<!--div class="paragraph">
 <p>From the command line, you can also see the <strong>Builds</strong>:</p>
 </div>
 <div class="listingblock">
@@ -211,7 +215,7 @@ nationalparks-1   Source    Git@b052ae6   Running    About a minute ago   1m2s</
 <div class="content">
 <pre class="highlightjs highlight"><code>$ oc logs -f builds/nationalparks-1</code></pre>
 </div>
-</div>
+</div-->
 <div class="paragraph">
 <p>After the build has completed and successfully:</p>
 </div>
@@ -233,6 +237,14 @@ will cause a new deployment to happen.</p>
 </ul>
 </div>
 <div class="paragraph">
+<p>In the end, you will new a new pod is created in the overview page.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/buildedpod.png" alt="S2I">
+</div>
+</div>
+<!--div class="paragraph">
 <p>In the end, when issuing the <code>oc get pods</code> command, you will see that the build Pod
 has finished (exited) and that an application <strong>Pod</strong> is in a ready and running state:</p>
 </div>
@@ -243,13 +255,13 @@ nationalparks-1-tkid3   1/1       Running     3          2m
 nationalparks-1-build   0/1       Completed   0          3m
 parksmap-1-4hbtk        1/1       Running     0          2h</code></pre>
 </div>
-</div>
+</div-->
 <div class="paragraph">
-<p>If you look again at the web console, you will notice that, when you create the
+<p>In the overview page, you will notice that, when you create the
 application this way, OpenShift also creates a <strong>Route</strong> for you. You can see the
-URL in the web console, or via the command line:</p>
+URL in the web console</p>
 </div>
-<div class="listingblock">
+<!--div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code>$ oc get routes</code></pre>
 </div>
@@ -263,13 +275,15 @@ URL in the web console, or via the command line:</p>
 nationalparks   nationalparks-explore-XX.apps.10.2.2.2.xip.io             nationalparks   8080-tcp
 parksmap        parksmap-explore-XX.apps.10.2.2.2.xip.io                  parksmap        8080-tcp</code></pre>
 </div>
-</div>
+</div-->
 <div class="paragraph">
 <p>In the above example, the URL is:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code>http://nationalparks-explore-XX.apps.10.2.2.2.xip.io</code></pre>
+<pre class="highlightjs highlight"><code>
+http://nationalparks-explore-XX.astri-ihub.org
+</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -280,7 +294,9 @@ complete URL to enter in your browser is:</p>
 </div>
 <div class="listingblock copypaste">
 <div class="content">
-<pre class="highlightjs highlight"><code>http://nationalparks-explore-XX.apps.10.2.2.2.xip.io/ws/info/</code></pre>
+<pre class="highlightjs highlight"><code>
+http://nationalparks-explore-XX.astri-ihub.org/ws/info/
+</code></pre>
 </div>
 </div>
 <div class="admonitionblock warning">

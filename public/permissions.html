@@ -28,15 +28,36 @@ account, we can do interesting things.</p>
 <p>The parksmap application wants to talk to the OpenShift API to learn about other
 <strong>Pods</strong>, <strong>Services</strong>, and resources within the <strong>Project</strong>. You&#8217;ll learn why soon!</p>
 </div>
-<div class="listingblock copypaste">
+<!--div class="listingblock copypaste">
 <div class="content">
 <pre class="highlightjs highlight"><code>$ oc project explore-XX</code></pre>
 </div>
+</div-->
+<div class="paragraph">
+<p>Navigate to the Membership page by clicking the left menu <strong>Resources</strong> -> <strong>Membership</strong></p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/membership.png" alt="Membership">
+</div>
 </div>
 <div class="paragraph">
-<p>Then:</p>
+<p>To grant the <strong>default</strong> service account to access the other objects (pod, service, route) within the project, you have to grant <strong>view</strong> access right to the <strong>default</strong> service account. <br/>Click the "<strong>Service Account</strong>" tab in the above screen, then click the <strong>"Edit Membership"</strong> button.
 </div>
-<div class="listingblock">
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/editserviceaccount.png" alt="Membership">
+</div>
+</div>
+<div class="paragraph">
+<p>Select <strong>default</strong> in the <strong>service account</strong> drop down list, select <strong>view</strong> role in the role selection drop down list and then click <strong>"Add"</strong> button to add the role to the service account.  Finally click the <strong>Done Editing</strong> button in the upper right corner to complete the editing.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/editedserviceaccount.png" alt="After Edit Membership">
+</div>
+</div>
+<!--div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code>$ oc policy add-role-to-user view -z default</code></pre>
 </div>
@@ -69,7 +90,7 @@ Beware of this if you attempt to use it in the future.</p>
 </td>
 </tr>
 </table>
-</div>
+</div-->
 <div class="paragraph">
 <p>Now that the default <strong>Service Account</strong> has <strong>view</strong> access, it can query the API
 to see what resources are within the <strong>Project</strong>. This also has the added benefit
@@ -81,13 +102,18 @@ of supressing the error message! Although, in reality, we fixed the application.
 <div class="paragraph">
 <p>If you create a project, you are that project&#8217;s administrator. This means that
 you can grant access to other users, too. If you like, give your neighbor view
-access to your <code>explore</code> project using the following command:</p>
+access to your <code>explore</code> project. The method is similar to how we grant access right to service account, the only different is select the <strong>Users</strong> tab instead of Service Accounts:</p>
 </div>
-<div class="listingblock copypaste">
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/grantusers.png" alt="Edit User Membership">
+</div>
+</div>
+<!--div class="listingblock copypaste">
 <div class="content">
 <pre class="highlightjs highlight"><code>$ oc policy add-role-to-user view userXX</code></pre>
 </div>
-</div>
+</div-->
 <div class="paragraph">
 <p>Have them go to the project view by clicking the <strong>Projects</strong> button and verify
 that they can see your project and its resources. This type of arrangement (view

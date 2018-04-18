@@ -183,6 +183,15 @@ environment variables, we simply need to modify the <strong>DeploymentConfigurat
 line.</p>
 </div>
 <div class="paragraph">
+<p>To set the environment variable of deployment configuration in the webconsole, navigate to the Environment setting page by selecting the <strong>Applications</strong>-><strong>Deployments</strong> in the left menu and click on the deployment <strong>nationalparks</strong>, then <strong>Environment</strong>. Below screen will be shown:
+</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/environment.png" alt="Environment">
+</div>
+</div>
+<!--div class="paragraph">
 <p>The command line takes a little less time, so let&#8217;s use that option. First, find
 the name of the DC:</p>
 </div>
@@ -190,11 +199,12 @@ the name of the DC:</p>
 <div class="content">
 <pre class="highlightjs highlight"><code>$ oc get dc</code></pre>
 </div>
-</div>
+</div-->
 <div class="paragraph">
-<p>Then, use the <code>oc env</code> command to set environment variables directly on the DC:</p>
+<p>Then, input the below list of environemnt variable name and value and then click <strong>Save</strong>.
+</p>
 </div>
-<div class="listingblock">
+<!--div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code>$ oc env dc nationalparks -e MONGODB_USER=mongodb -e MONGODB_PASSWORD=mongodb -e MONGODB_DATABASE=mongodb -e MONGODB_SERVER_HOST=mongodb</code></pre>
 </div>
@@ -207,7 +217,7 @@ environment variables have been added by viewing the YAML for it:</p>
 <div class="content">
 <pre class="highlightjs highlight"><code>$ oc get dc nationalparks -o yaml</code></pre>
 </div>
-</div>
+</div-->
 <div class="paragraph">
 <p>You should see the following section:</p>
 </div>
@@ -224,7 +234,7 @@ environment variables have been added by viewing the YAML for it:</p>
     value: mongodb</code></pre>
 </div>
 </div>
-<div class="paragraph">
+<!--div class="paragraph">
 <p>You can also just ask OpenShift to tell you about the environment variables on
 the DC:</p>
 </div>
@@ -238,16 +248,22 @@ MONGODB_DATABASE=mongodb
 MONGODB_SERVER_HOST=mongodb</code></pre>
 </div>
 </div>
-</div>
+</div-->
 <div class="sect3">
 <h4 id="_exercise_exploring_openshift_magic">Exercise: Exploring OpenShift Magic</h4>
 <div class="paragraph">
-<p>As soon as we set the environment variables on the <strong>DeploymentConfiguration</strong>, some
+<p>As soon as we save the environment variables on the <strong>DeploymentConfiguration</strong>, some
 magic happened. OpenShift decided that this was a significant enough change to
 warrant updating the internal version number of the <strong>DeploymentConfiguration</strong>. You
-can verify this by looking at the output of <code>oc get dc</code>:</p>
+can see that OpenShift will trigger the deploy automatically due to the configuration change.</p>
 </div>
-<div class="listingblock">
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/autodeploy.png" alt="Environment Change">
+</div>
+</div>
+
+<!--div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code>NAME            REVISION   DESIRED   CURRENT   TRIGGERED BY
 mongodb         1          1         1         config,image(mongodb:3.2)
@@ -275,7 +291,7 @@ is 0. The desired and current number of instances for the "-2" deployment is 1.
 This means that OpenShift has gracefully torn down our "old" application and
 stood up a "new" instance.</p>
 </div>
-</div>
+</div-->
 <div class="sect3">
 <h4 id="_exercise_data_data_everywhere">Exercise: Data, Data, Everywhere</h4>
 <div class="paragraph">
@@ -284,7 +300,9 @@ service to query for data:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code>http://nationalparks-explore-XX.apps.10.2.2.2.xip.io/ws/data/all</code></pre>
+<pre class="highlightjs highlight"><code>
+http://nationalparks-explore-XX.astri-ihub.org/ws/data/all
+</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -305,7 +323,9 @@ application and then deployed the database. Nothing actually loaded anything
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code>http://nationalparks-explore-XX.apps.10.2.2.2.xip.io/ws/data/load</code></pre>
+<pre class="highlightjs highlight"><code>
+http://nationalparks-explore-XX.astri-ihub.org/ws/data/load
+</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -335,7 +355,9 @@ a browser problem, and the application is working properly.
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code>http://parksmap-explore-XX.apps.10.2.2.2.xip.io</code></pre>
+<pre class="highlightjs highlight"><code>
+http://parksmap-explore-XX.astri-ihub.org
+</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -360,7 +382,9 @@ here:</p>
 </div>
 <div class="listingblock copypaste">
 <div class="content">
-<pre class="highlightjs highlight"><code>http://gitlab-ce-workshop-infra.apps.10.2.2.2.xip.io/userXX/nationalparks/blob/1.2.0/src/main/java/com/openshift/evg/roadshow/parks/db/MongoDBConnection.java#L44-l48</code></pre>
+<pre class="highlightjs highlight"><code>
+https://github.com/openshift-roadshow/nationalparks/blob/master/src/main/java/com/openshift/evg/roadshow/parks/db/MongoDBConnection.java#L44-l48
+</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -382,7 +406,7 @@ variables</a> section of the Developer Guide.</p>
 <h4 id="_exercise_working_with_labels">Exercise: Working With Labels</h4>
 <div class="paragraph">
 <p>We explored how a <strong>Label</strong> is just a key=value pair earlier when looking at
-<strong>Services</strong> and <strong>Routes</strong> and <strong>Selectors</strong>. In general, a <strong>Label</strong> is simply an
+<strong>Services</strong> and <strong>Selectors</strong>. In general, a <strong>Label</strong> is simply an
 arbitrary key=value pair. It could be anything.</p>
 </div>
 <div class="ulist">
@@ -400,7 +424,7 @@ arbitrary key=value pair. It could be anything.</p>
 </div>
 <div class="paragraph">
 <p>In the case of the parks map, the application is actually querying the OpenShift
-API and asking about the <strong>Routes</strong> and <strong>Services</strong> in the project. If any of them have a
+API and asking about the <strong>Services</strong> in the project. If any of them have a
 <strong>Label</strong> that is <code>type=parksmap-backend</code>, the application knows to interrogate
 the endpoints to look for map data.</p>
 </div>
@@ -409,10 +433,14 @@ the endpoints to look for map data.</p>
 <a href="https://github.com/openshift-roadshow/parksmap-web/blob/1.2.0/src/main/java/com/openshift/evg/roadshow/rest/RouteWatcher.java#L20">here</a>.</p>
 </div>
 <div class="paragraph">
-<p>Fortunately, the command line provides a convenient way for us to manipulate
-labels. <code>describe</code> the <code>nationalparks</code> service:</p>
+<p>Currently, the webconsole didn't have function to directly add/remove label from object (Service/Route/DeploymentConfig/...).  To add/remove label for service, you could edit the service YAML content by navigate to <strong>Applications</strong>-><strong>Services</strong>, click <strong>nationalparks</strong> and select <strong>"Edit YAML"</strong> in the right <strong>Actions</strong> dropdown.</p>
 </div>
-<div class="listingblock">
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/edityaml.png" alt="Edit YAML">
+</div>
+</div>
+<!--div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code>$ oc describe route nationalparks
 
@@ -431,11 +459,16 @@ Service:                nationalparks
 Weight:                 100 (100%)
 Endpoints:              10.1.9.8:8080</code></pre>
 </div>
-</div>
+</div-->
 <div class="paragraph">
-<p>You see that it only has one label: <code>app=nationalparks</code>. Now, use <code>oc label</code>:</p>
+<p>You see that it only has one label: <code>app=nationalparks</code>. Now, add a new label <code>type=parksmap-backend</code> under <code>app=nationparks</code> as shown in the following screenshot and click <strong>Save</strong></p>
 </div>
-<div class="listingblock">
+<div class="imageblock">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/editserviceyaml.png" alt="Edit YAML">
+</div>
+</div>
+<!--div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code>$ oc label route nationalparks type=parksmap-backend</code></pre>
 </div>
@@ -447,13 +480,15 @@ Endpoints:              10.1.9.8:8080</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code>route "nationalparks" labeled</code></pre>
 </div>
-</div>
+</div-->
 <div class="paragraph">
 <p>If you check your browser now:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code>http://parksmap-explore-XX.apps.10.2.2.2.xip.io/</code></pre>
+<pre class="highlightjs highlight"><code>
+http://parksmap-explore-XX.astri-ihub.org/
+</code></pre>
 </div>
 </div>
 <div class="imageblock">

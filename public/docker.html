@@ -24,7 +24,7 @@ web console.</p>
 <p>Return to the web console:</p>
 </div>
 <div class="paragraph">
-<p><strong><a href="https://10.2.2.2:8443" class="bare">https://10.2.2.2:8443</a></strong></p>
+<p><strong><a href="https://astri-ihub.org:8443" class="bare">https://astri-ihub.org:8443</a></strong></p>
 </div>
 <div class="paragraph">
 <p>Find your <strong>explore-XX</strong> project and click it. Next, click "Add to
@@ -103,7 +103,7 @@ server, a log analyzer, and a file service to help manage uploaded files.</p>
 was created by your actions. This <strong>Pod</strong> contains a single container, which
 happens to be the parks map application - a simple Spring Boot/Java application.</p>
 </div>
-<div class="paragraph">
+<!--div class="paragraph">
 <p>You can also examine <strong>Pods</strong> from the command line:</p>
 </div>
 <div class="listingblock">
@@ -173,12 +173,22 @@ urceVersion":"36222"}}
   name: parksmap-1-bvaz6
 ...............</code></pre>
 </div>
+</div-->
+<div class="imageblock" style="text-align: center">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/examinepod.png" alt="Examine Pod" width="800">
+</div>
 </div>
 <div class="paragraph">
-<p>The web interface also shows a lot of the same information on the <strong>Pod</strong> details
+<p>The web interface shows a lot of the information on the <strong>Pod</strong> details
 page. If you click in the <strong>Pod</strong> circle, and then click the <strong>Pod</strong> name, you will
 find the details page. You can also get there by clicking "Applications", then
 "Pods", at the left, and then clicking the <strong>Pod</strong> name.</p>
+</div>
+<div class="imageblock" style="text-align: center">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/containerdetail.png" alt="Pod Detail" width="800">
+</div>
 </div>
 <div class="paragraph">
 <p>Getting the parks map image running may take a little while to complete. Each
@@ -232,9 +242,14 @@ including the YAML format to make one by hand, in the official documentation.</p
 <div class="paragraph">
 <p>Now that we understand the basics of what a <strong>Service</strong> is, let&#8217;s take a look at
 the <strong>Service</strong> that was created for the image that we just deployed.  In order to
-view the <strong>Services</strong> defined in your <strong>Project</strong>, enter in the following command:</p>
+view the <strong>Services</strong> defined in your <strong>Project</strong>, You can get there by clicking "Applications", then "Services", at the left.</p>
 </div>
-<div class="listingblock">
+<div class="imageblock" style="text-align: center">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/services.png" alt="Services" width="800">
+</div>
+</div>
+<!--div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code>$ oc get services</code></pre>
 </div>
@@ -247,22 +262,27 @@ view the <strong>Services</strong> defined in your <strong>Project</strong>, ent
 <pre class="highlightjs highlight"><code>NAME       CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 parksmap   172.30.169.213   &lt;none&gt;        8080/TCP   3h</code></pre>
 </div>
-</div>
+</div-->
 <div class="paragraph">
 <p>In the above output, we can see that we have a <strong>Service</strong> named <code>parksmap</code> with an
-IP/Port combination of 172.30.169.213/8080TCP. Your IP address may be different, as
+IP/Port combination of 172.30.89.161/8080 TCP. Your IP address may be different, as
 each <strong>Service</strong> receives a unique IP address upon creation. <strong>Service</strong> IPs are
 fixed and never change for the life of the <strong>Service</strong>.</p>
 </div>
-<div class="paragraph">
+<!--div class="paragraph">
 <p>In the web console, service information is available by clicking "Applications"
 and then clicking "Services" in the "Networking" submenu.</p>
-</div>
+</div-->
 <div class="paragraph">
-<p>You can also get more detailed information about a <strong>Service</strong> by using the
-following command to display the data in YAML:</p>
+<p>You can also get more detailed information about a <strong>Service</strong> by clicking the <strong>service</strong> name: <strong>parksmap</strong>
+</p>
 </div>
-<div class="listingblock">
+<div class="imageblock" style="text-align: center">
+<div class="content">
+<img src="/api/workshops/roadshow/content/assets/images/servicedetail.png" alt="Service Detail" width="800">
+</div>
+</div>
+<!--div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code>$ oc get service parksmap -o yaml</code></pre>
 </div>
@@ -390,7 +410,7 @@ Endpoints:              10.1.2.5:8080
 Session Affinity:       None
 No events.</code></pre>
 </div>
-</div>
+</div-->
 <div class="paragraph">
 <p>You may be wondering why only one end point is listed. That is because there is
 only one <strong>Pod</strong> currently running.  In the next lab, we will learn how to scale
