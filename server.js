@@ -12,7 +12,7 @@ app.get('/api/workshops', function (req, res) {
 
 app.get('/api/workshops/roadshow', function (req, res) {
    res.setHeader('Content-Type', 'application/json');
-   res.send(JSON.stringify({"id":"roadshow","modules":["environment","install","explore","docker","scaling","routes","logging","permissions","remote-ops","java","databases","configmap","application-health","pipelines","codechanges","templates","clustering","further-resources"],"name":"Roadshow"}));
+   res.send(JSON.stringify({"id":"roadshow","modules":["environment","install","explore","docker","scaling","routes","logging","permissions","remote-ops","java","databases","configmap","application-health","pipelines","templates","further-resources"],"name":"Roadshow"}));
 })
 
 app.get('/api/workshops/roadshow/modules', function (req, res) {
