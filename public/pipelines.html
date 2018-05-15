@@ -158,11 +158,11 @@ retrieve information and invoke action in OpenShift:</p>
 <div class="paragraph">
 <p>Since we are going to be replacing the current <code>nationalparks</code> application with
 a <strong>Live</strong> version, we should remove the <strong>Dev</strong> version from the <code>parksmap</code> by
-taking away the <strong>Route</strong> label:</p>
+taking away the <strong>Service</strong> label:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code>$ oc label route nationalparks type-</code></pre>
+<pre class="highlightjs highlight"><code>$ oc label service nationalparks type-</code></pre>
 </div>
 </div>
 </div>
@@ -396,16 +396,16 @@ means that the application backing up the route is not yet ready. Wait until the
 <h4 id="_label_service">Label Service</h4>
 <div class="paragraph">
 <p>As discussed in <a href="databases">previous labs</a>, the <code>parksmap</code> web app queries the OpenShift API and
-looks for routes that have the label <code>type=parksmap-backend</code> and interrogates the
+looks for services that have the label <code>type=parksmap-backend</code> and interrogates the
 discovered endpoints to visualize their map data. After creating the pipeline,
 <code>parksmap</code> should use the <strong>Live</strong> container instead of the <strong>Dev</strong> container so that
 deployments to the <strong>Dev</strong> container does not disrupt the <code>parksmap</code> application.
-You can do that by removing the <code>type</code> label from the <strong>Dev</strong> route and adding it
-to the <strong>Live</strong> route:</p>
+You can do that by removing the <code>type</code> label from the <strong>Dev</strong> service and adding it
+to the <strong>Live</strong> service:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code>$ oc label route nationalparks-live type=parksmap-backend</code></pre>
+<pre class="highlightjs highlight"><code>$ oc label service nationalparks-live type=parksmap-backend</code></pre>
 </div>
 </div>
 </div>
